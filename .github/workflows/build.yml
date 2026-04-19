@@ -1,0 +1,32 @@
+name: Build Td5 Map Editor
+on: [workflow_dispatch] 
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+    - name: Checkout Source Code
+      uses: actions/checkout@v4
+
+    - name: Install Qt Framework
+      uses: jurplel/install-qt-action@v4
+      with:
+        version: '5.15.2'
+        arch: 'win64_mingw81'
+
+    - name: Compile Application
+      run: |
+        qmake td5mapeditor.pro
+        mingw32-make release
+
+    - name: Package Executable and DLLs
+      run: |
+        mkdir Td5Editor_Release
+        copy release\Td5MapEditor.exe Td5Editor_Release\
+        windeployqt --compiler-runtime Td5Editor_Release\Td5MapEditor.exe
+
+    - name: Upload Ready-to-Run App
+      uses: actions/upload-artifact@v4
+      with:
+        name: Td5MapEditor-Windows-Standalone
+        path: Td5Editor_Release/
