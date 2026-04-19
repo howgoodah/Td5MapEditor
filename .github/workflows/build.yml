@@ -13,17 +13,24 @@ jobs:
       with:
         version: '5.15.2'
         arch: 'win64_mingw81'
+        modules: 'qtcharts qtserialport'
 
     - name: Compile Application
+      shell: pwsh
       run: |
+        $pro = Get-ChildItem -Filter *.pro -Recurse | Select-Object -First 1
+        Set-Location $pro.Directory
         qmake
         mingw32-make release
 
     - name: Package Executable and DLLs
+      shell: pwsh
       run: |
-        mkdir Td5Editor_Release
-        copy release\Td5MapEditor.exe Td5Editor_Release\
-        windeployqt --compiler-runtime Td5Editor_Release\Td5MapEditor.exe
+        mkdir $env:GITHUB_WORKSPACE\Td5Editor_Release
+        $exe = Get-ChildItem -Filter *.exe -Recurse | Select-Object -First 1
+        Copy-Item $exe.FullName -Destination $env:GITHUB_WORKSPACE\Td5Editor_Release\
+        $targetExe = "$env:GITHUB_WORKSPACE\Td5Editor_Release\" + $exe.Name
+        windeployqt --compiler-runtime $targetExe
 
     - name: Upload Ready-to-Run App
       uses: actions/upload-artifact@v4
