@@ -16,7 +16,7 @@ jobs:
 
     - name: Compile Application
       run: |
-        qmake td5mapeditor.pro
+        qmake
         mingw32-make release
 
     - name: Package Executable and DLLs
