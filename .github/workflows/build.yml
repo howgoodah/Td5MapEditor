@@ -14,18 +14,22 @@ jobs:
         version: '5.15.2'
         arch: 'win64_mingw81'
 
-    - name: Compile Application
-      shell: cmd
+    - name: Find and Compile
+      shell: pwsh
       run: |
+        $proFile = Get-ChildItem -Filter *.pro -Recurse | Select-Object -First 1
+        Set-Location $proFile.Directory
         qmake
         mingw32-make release
 
-    - name: Package Executable and DLLs
-      shell: cmd
+    - name: Package Executable
+      shell: pwsh
       run: |
+        Set-Location $env:GITHUB_WORKSPACE
         mkdir Td5Editor_Release
-        copy release\*.exe Td5Editor_Release\Td5MapEditor.exe
-        windeployqt --compiler-runtime Td5Editor_Release\Td5MapEditor.exe
+        $exeFile = Get-ChildItem -Filter *.exe -Recurse | Where-Object { $_.FullName -match "release" } | Select-Object -First 1
+        Copy-Item $exeFile.FullName -Destination "Td5Editor_Release\Td5MapEditor.exe"
+        windeployqt --compiler-runtime "Td5Editor_Release\Td5MapEditor.exe"
 
     - name: Upload Ready-to-Run App
       uses: actions/upload-artifact@v4
