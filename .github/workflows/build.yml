@@ -9,28 +9,23 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Install Qt Framework
-      uses: jurplel/install-qt-action@v4
+      uses: jurplel/install-qt-action@v3
       with:
         version: '5.15.2'
         arch: 'win64_mingw81'
-        modules: 'qtcharts qtserialport'
 
     - name: Compile Application
-      shell: pwsh
+      shell: cmd
       run: |
-        $pro = Get-ChildItem -Filter *.pro -Recurse | Select-Object -First 1
-        Set-Location $pro.Directory
         qmake
         mingw32-make release
 
     - name: Package Executable and DLLs
-      shell: pwsh
+      shell: cmd
       run: |
-        mkdir $env:GITHUB_WORKSPACE\Td5Editor_Release
-        $exe = Get-ChildItem -Filter *.exe -Recurse | Select-Object -First 1
-        Copy-Item $exe.FullName -Destination $env:GITHUB_WORKSPACE\Td5Editor_Release\
-        $targetExe = "$env:GITHUB_WORKSPACE\Td5Editor_Release\" + $exe.Name
-        windeployqt --compiler-runtime $targetExe
+        mkdir Td5Editor_Release
+        copy release\*.exe Td5Editor_Release\Td5MapEditor.exe
+        windeployqt --compiler-runtime Td5Editor_Release\Td5MapEditor.exe
 
     - name: Upload Ready-to-Run App
       uses: actions/upload-artifact@v4
